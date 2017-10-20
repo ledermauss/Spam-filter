@@ -85,12 +85,16 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     @Override
     public double makePrediction(ParsedText text) {
         double pr = 0;
+        if(super.nbExamplesProcessed <= 2) {
+            System.out.println("Printing text");
+            System.out.println(text);
+        }
 
+        //System.out.println()
         /* FILL IN HERE */
 
         return pr;
     }
-
 
 
     /**
@@ -113,6 +117,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             boolean writeOutAllPredictions = args.length>7 && args[7].equals("-writeOutAllPredictions");
 
             // initialize e-mail stream
+            // n is the maximum size of n-grams.
             MailStream stream = new MailStream(indexPath, new EmlParser(stopWordsPath,n));
 
             // initialize learner
@@ -120,6 +125,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
 
             // generate output for the learning curve
             EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
+            // nbfh stands for feature hashing
             nb.makeLearningCurve(stream, evaluationMetrics, out+".nbfh", reportingPeriod, writeOutAllPredictions);
 
         } catch (FileNotFoundException e) {

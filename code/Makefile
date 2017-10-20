@@ -19,10 +19,10 @@ LEARNING_RATE=0.0001
 
 
 # Experiment parameters
-OUT=out
+OUT=./output/out
 PERIOD=1000
 
-SMALL_OUT=small
+SMALL_OUT=./output/small
 SMALL_PERIOD=100
 
 

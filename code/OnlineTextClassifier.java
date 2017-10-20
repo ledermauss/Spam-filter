@@ -85,6 +85,7 @@ abstract public class OnlineTextClassifier {
 
         boolean hasNext = iterator.hasNext();
 
+        // Iterates all mails, evaluates prediction results
         while(hasNext) {
             ArrayList<LabeledText> buffer = new ArrayList<>(nbToTest);
 
@@ -95,11 +96,13 @@ abstract public class OnlineTextClassifier {
 
             i = 0;
 
+            // obtains TP, FP, TN, FN for the set
             while(hasNext && i <nbToTest){
                 i ++;
                 LabeledText example = iterator.next();
                 double prediction = makePrediction(example.text);
                 int predictedClass = classify(prediction);
+
                 if (predictedClass==1){
                     if (example.label==1){
                         TP++;
@@ -114,7 +117,7 @@ abstract public class OnlineTextClassifier {
                     }
                 }
 
-                // write prediction to file
+                // write prediction(original_label, prediction value, class) to file
                 if (writeOutAllPredictions) {
                     predictionWriter.println(example.label+"\t"+predictedClass+"\t"+prediction);
                     predictionWriter.flush();
@@ -123,6 +126,9 @@ abstract public class OnlineTextClassifier {
                 buffer.add(example);
                 hasNext = iterator.hasNext();
             }
+
+            //model evaluaton. Prints to each _scoreName_ file the result
+            // structure: nbExamplesProcessed \t score -> for the evaluation curve
             String outline = "trained with: "+nbExamplesProcessed;
             for (int e=0; e< evals.length; e++) {
                 double score = evals[e].evaluate(TP,FP,TN,FN);
