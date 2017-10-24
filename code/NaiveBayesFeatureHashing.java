@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
 
     private int logNbOfBuckets;
+    private int hashSize;
     private int[][] counts; // counts[c][i]: The count of n-grams in e-mails of class c (spam: c=1) that hash to value i
     private int[] classCounts; //classCounts[c] the count of e-mails of class c (spam: c=1)
 
@@ -34,8 +35,8 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public NaiveBayesFeatureHashing(int logNbOfBuckets, double threshold){
         this.logNbOfBuckets=logNbOfBuckets;
         this.threshold = threshold;
-//        this.counts = new int[2][2 ^ this.logNbOfBuckets - 1];
-        this.counts = new int[2][9999990];
+        this.hashSize = (int )Math.pow(this.logNbOfBuckets, 2) - 1;
+        this.counts = new int[2][this.hashSize];
         /* FILL IN HERE */
 
     }
@@ -51,13 +52,9 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      * @return the hash value of the h'th hash function for string str
      */
     private int hash(String str){
-        int v=0;
-        v = str.hashCode();
-        v = v < 0? - v : v;
-        v = v > 999990 ? v / 99999 : v;
-
-        /* FILL IN HERE */
-
+        // TODO: use a non negative, fixable string hashing function
+        int v = str.hashCode() % this.hashSize;
+        v = v < 0 ? -v : v;
         return v;
     }
 
@@ -79,14 +76,10 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             raul_grams.add(new Integer(this.hash(n)));
         }
         */
-        Set<Integer> hashedNgrams = ngrams.stream().map(n -> new Integer(this.hash(n))).collect(Collectors.toSet());
+        Set<Integer> hashedNgrams = ngrams.stream().map(n -> this.hash(n)).collect(Collectors.toSet());
         for(int i: hashedNgrams){
             counts[c][i]++;
         }
-
-
-        /* FILL IN HERE */
-
     }
 
 
