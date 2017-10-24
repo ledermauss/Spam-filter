@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -33,7 +34,8 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public NaiveBayesFeatureHashing(int logNbOfBuckets, double threshold){
         this.logNbOfBuckets=logNbOfBuckets;
         this.threshold = threshold;
-
+//        this.counts = new int[2][2 ^ this.logNbOfBuckets - 1];
+        this.counts = new int[2][9999990];
         /* FILL IN HERE */
 
     }
@@ -50,6 +52,9 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      */
     private int hash(String str){
         int v=0;
+        v = str.hashCode();
+        v = v < 0? - v : v;
+        v = v > 999990 ? v / 99999 : v;
 
         /* FILL IN HERE */
 
@@ -66,6 +71,19 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     @Override
     public void update(LabeledText labeledText){
         super.update(labeledText);
+        Set<String> ngrams = labeledText.text.ngrams;
+        int c = labeledText.label;
+        /* No lambda
+        Set<Integer> raul_grams = new Set<Integer>;
+        for (String n: ngrams){
+            raul_grams.add(new Integer(this.hash(n)));
+        }
+        */
+        Set<Integer> hashedNgrams = ngrams.stream().map(n -> new Integer(this.hash(n))).collect(Collectors.toSet());
+        for(int i: hashedNgrams){
+            counts[c][i]++;
+        }
+
 
         /* FILL IN HERE */
 
@@ -85,10 +103,11 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     @Override
     public double makePrediction(ParsedText text) {
         double pr = 0;
+        /*
         if(super.nbExamplesProcessed <= 2) {
             System.out.println("Printing text");
             System.out.println(text);
-        }
+        }*/
 
         //System.out.println()
         /* FILL IN HERE */
@@ -96,6 +115,18 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         return pr;
     }
 
+    @Override
+    public String getInfo() {
+        int c, i;
+        for(c = 0; c < 2; c++){
+            for(i = 0; i < counts[c].length; i++){
+                if(counts[c][i] > 0)
+                    System.out.println("Class " + c + ", feature " + i + "has " +
+                            counts[c][i] + " counts");
+            }
+        }
+        return(super.getInfo());
+    }
 
     /**
      * This runs your code.
@@ -127,6 +158,8 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
             // nbfh stands for feature hashing
             nb.makeLearningCurve(stream, evaluationMetrics, out+".nbfh", reportingPeriod, writeOutAllPredictions);
+
+            nb.getInfo();
 
         } catch (FileNotFoundException e) {
             System.err.println(e.toString());

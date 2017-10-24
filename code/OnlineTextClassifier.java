@@ -138,6 +138,7 @@ abstract public class OnlineTextClassifier {
             }
             System.out.println(outline);
 
+            //updates (trains) the model with all mails of the iteration. After predicting
             for (LabeledText example: buffer){
                 update(example);
             }
