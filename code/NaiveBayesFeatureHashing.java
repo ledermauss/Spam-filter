@@ -37,6 +37,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         this.threshold = threshold;
         this.hashSize = (int )Math.pow(this.logNbOfBuckets, 2) - 1;
         this.counts = new int[2][this.hashSize];
+        this.classCounts = new int[2];
         /* FILL IN HERE */
 
     }
@@ -52,10 +53,9 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      * @return the hash value of the h'th hash function for string str
      */
     private int hash(String str){
-        // TODO: use a non negative, fixable string hashing function
-        int v = str.hashCode() % this.hashSize;
-        v = v < 0 ? -v : v;
-        return v;
+        int strHash = MurmurHash.hash32(str, 0xe17a1465);
+        int positiveHash = (strHash & 0x7FFFFFFF) % this.hashSize;
+        return positiveHash;
     }
 
     /**
@@ -70,14 +70,14 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         super.update(labeledText);
         Set<String> ngrams = labeledText.text.ngrams;
         int c = labeledText.label;
-        /* No lambda
-        Set<Integer> raul_grams = new Set<Integer>;
-        for (String n: ngrams){
-            raul_grams.add(new Integer(this.hash(n)));
-        }
-        */
-        Set<Integer> hashedNgrams = ngrams.stream().map(n -> this.hash(n)).collect(Collectors.toSet());
+
+        //update class counts
+        this.classCounts[c]++;
+        //update feature counts. If accounting for presence: only unique hashes?
+        Set<Integer> hashedNgrams = ngrams.stream().map(this::hash).collect(Collectors.toSet());
         for(int i: hashedNgrams){
+            // question: should i count frequency of features (ngrams), or presence?
+            // presence is just removing duplicates in the ngrams
             counts[c][i]++;
         }
     }
@@ -96,14 +96,14 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     @Override
     public double makePrediction(ParsedText text) {
         double pr = 0;
-        /*
-        if(super.nbExamplesProcessed <= 2) {
-            System.out.println("Printing text");
-            System.out.println(text);
+/*        Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
+        for(int f: features){
+        // if presence, i just have to use classCounts (and thus remove it). If frequency,
+        // the denominator of the first expression must be the sum of all features in the class (bigger than class counts)
+            double con_prob_feat_spam_ = (double) counts[1][f]/classCounts[1];
+                    * (double) classCounts[1]/this.nbExamplesProcessed;
         }*/
 
-        //System.out.println()
-        /* FILL IN HERE */
 
         return pr;
     }
@@ -114,9 +114,10 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         for(c = 0; c < 2; c++){
             for(i = 0; i < counts[c].length; i++){
                 if(counts[c][i] > 0)
-                    System.out.println("Class " + c + ", feature " + i + "has " +
+                    System.out.println("Class " + c + ", feature " + i + " has " +
                             counts[c][i] + " counts");
             }
+            System.out.println("Class " + c + " has " + classCounts[c] + " counts");
         }
         return(super.getInfo());
     }
