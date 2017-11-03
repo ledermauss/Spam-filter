@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 
 
@@ -17,6 +18,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     private int hashSize;
     private int[][] counts; // counts[c][i]: The count of n-grams in e-mails of class c (spam: c=1) that hash to value i
     private int[] classCounts; //classCounts[c] the count of e-mails of class c (spam: c=1)
+    private static final Logger LOGGER = Logger.getLogger(NaiveBayesFeatureHashing.class.getName());
 
     /* FILL IN HERE */
 
@@ -35,11 +37,27 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public NaiveBayesFeatureHashing(int logNbOfBuckets, double threshold){
         this.logNbOfBuckets=logNbOfBuckets;
         this.threshold = threshold;
-        this.hashSize = (int )Math.pow(this.logNbOfBuckets, 2) - 1;
+        this.hashSize = (int )Math.pow(2, this.logNbOfBuckets) - 1;
         this.counts = new int[2][this.hashSize];
         this.classCounts = new int[2];
-        /* FILL IN HERE */
-
+        LOGGER.setUseParentHandlers(false);
+        Handler fileHandler  = null;
+        try{
+            //Creating consoleHandler and fileHandler
+            fileHandler  = new FileHandler("./log/nbfh.log");
+            //Assigning handlers to LOGGER object
+            LOGGER.addHandler(fileHandler);
+            //Setting levels to handlers and LOGGER
+            fileHandler.setLevel(Level.ALL);
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.config("Configuration done.");
+            //Console handler removed
+            LOGGER.log(Level.FINE, "Finer logged");
+        }catch(IOException exception){
+            LOGGER.log(Level.SEVERE, "Error occur in FileHandler.", exception);
+        }
+        LOGGER.finer("Finest example on LOGGER handler completed.");
+        LOGGER.info("Buckets number is " + this.logNbOfBuckets + " , and hashsize: " + this.hashSize);
     }
 
     /**
@@ -55,6 +73,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     private int hash(String str){
         int strHash = MurmurHash.hash32(str, 0xe17a1465);
         int positiveHash = (strHash & 0x7FFFFFFF) % this.hashSize;
+//        System.out.println(this.hashSize);
         return positiveHash;
     }
 
@@ -70,19 +89,12 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         super.update(labeledText);
         Set<String> ngrams = labeledText.text.ngrams;
         int c = labeledText.label;
-        /* No lambda
-        Set<Integer> raul_grams = new Set<Integer>;
-        for (String n: ngrams){
-            raul_grams.add(new Integer(this.hash(n)));
-        }
-        */
         //update class counts
         this.classCounts[c]++;
-        //update feature counts. If accounting for presence: only unique hashes?
+        //update feature counts. Since only presence matters, duplicates must be removed.
+        // Set does it automatically. Also, Set is (way) faster than List.
         Set<Integer> hashedNgrams = ngrams.stream().map(this::hash).collect(Collectors.toSet());
         for(int i: hashedNgrams){
-            // question: should i count frequency of features (ngrams), or presence?
-            // presence is just removing duplicates in the ngrams
             counts[c][i]++;
         }
     }
@@ -100,16 +112,19 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      */
     @Override
     public double makePrediction(ParsedText text) {
-        double pr = 0;
-/*        Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
+        double pr;
+        Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
+        double sumProb = 0;
         for(int f: features){
-        // if presence, i just have to use classCounts (and thus remove it). If frequency,
-        // the denominator of the first expression must be the sum of all features in the class (bigger than class counts)
-            double con_prob_feat_spam_ = (double) counts[1][f]/classCounts[1];
-                    * (double) classCounts[1]/this.nbExamplesProcessed;
-        }*/
-
-
+            // NOTE: some features might not be in my matrix, an thus return 0. In that case,
+            // the log will return a NaN (and all subsequently results.
+            double conditional = (double) counts[1][f]/ classCounts[1];
+            if(conditional == 0) continue;
+            else sumProb += Math.log(conditional);
+        }
+        sumProb += Math.log((double) classCounts[1] / this.nbExamplesProcessed);
+        pr = Math.exp(sumProb);
+        LOGGER.log(Level.INFO, "The predicted value is: " + pr);
         return pr;
     }
 
@@ -124,6 +139,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             }
             System.out.println("Class " + c + " has " + classCounts[c] + " counts");
         }
+        // boolean raul = this.nbExamplesProcessed == (classCounts[0] + classCounts[1]); returns true
         return(super.getInfo());
     }
 
