@@ -114,15 +114,15 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public double makePrediction(ParsedText text) {
         double pr;
         Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
-        double hamSum = 0;
-        double spamSum = 0;
+        double hamSum = (double) classCounts[0]/this.nbExamplesProcessed;
+        double spamSum = (double) classCounts[1]/this.nbExamplesProcessed;
         for(int f: features){
             if(counts[0][f]*counts[1][f] != 0) {
-                spamSum += (double) counts[1][f] / classCounts[1];
-                hamSum += (double) counts[0][f] / classCounts[0];
+                spamSum *= (double) counts[1][f] / classCounts[1];
+                hamSum *= (double) counts[0][f] / classCounts[0];
             } else{}
         }
-        pr = (spamSum / (spamSum + hamSum)) * ((double) classCounts[1]/this.nbExamplesProcessed);
+        pr = (spamSum / (spamSum + hamSum));
         LOGGER.log(Level.INFO, "The predicted value is: " + pr);
         return pr;
     }
