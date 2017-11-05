@@ -112,10 +112,9 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         double hamSum = Math.log((double) classCounts[0]/this.nbExamplesProcessed);
         double spamSum = Math.log((double) classCounts[1]/this.nbExamplesProcessed);
         for(int f: features){
-            if(counts[0][f]*counts[1][f] != 0) {
-                hamSum += Math.log((double) counts[0][f] / classCounts[0]);
-                spamSum += Math.log((double) counts[1][f] / classCounts[1]);
-            }
+            // adding 1 and this.hashSize (vocabulary size) for Laplace smothing
+            hamSum += Math.log((1.0 + counts[0][f]) / (classCounts[0] + this.hashSize));
+            spamSum += Math.log((1.0 + counts[1][f]) / (classCounts[1] + this.hashSize));
         }
         //log-sum trick. Log(a) = spamSum, Log(b) = hamSum
         // pr = spamSum - (spamSum + Log(1 + e^(hamSum-spamSum))
@@ -128,14 +127,13 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public String getInfo() {
         int c, i;
         for(c = 0; c < 2; c++){
-            for(i = 0; i < counts[c].length; i++){
+/*            for(i = 0; i < counts[c].length; i++){
                 if(counts[c][i] > 0);
-/*                    System.out.println("Class " + c + ", feature " + i + " has " +
-                            counts[c][i] + " counts");*/
-            }
+                    System.out.println("Class " + c + ", feature " + i + " has " +
+                            counts[c][i] + " counts");
+            }*/
             System.out.println("Class " + c + " has " + classCounts[c] + " counts");
         }
-        // boolean raul = this.nbExamplesProcessed == (classCounts[0] + classCounts[1]); returns true
         return(super.getInfo());
     }
 
