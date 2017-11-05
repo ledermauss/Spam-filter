@@ -19,6 +19,8 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     private int[][] counts; // counts[c][i]: The count of n-grams in e-mails of class c (spam: c=1) that hash to value i
     private int[] classCounts; //classCounts[c] the count of e-mails of class c (spam: c=1)
     private static final Logger LOGGER = Logger.getLogger(NaiveBayesFeatureHashing.class.getName());
+    private int hamCounts;
+    private int spamCounts;
 
     /* FILL IN HERE */
 
@@ -72,9 +74,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      */
     private int hash(String str){
         int strHash = MurmurHash.hash32(str, 0xe17a1465);
-        int positiveHash = (strHash & 0x7FFFFFFF) % this.hashSize;
-//        System.out.println(this.hashSize);
-        return positiveHash;
+        return (strHash & 0x7FFFFFFF) % this.hashSize;
     }
 
     /**
@@ -114,16 +114,15 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     public double makePrediction(ParsedText text) {
         double pr;
         Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
-        double sumProb = 0;
+        double hamSum = 0;
+        double spamSum = 0;
         for(int f: features){
-            // NOTE: some features might not be in my matrix, an thus return 0. In that case,
-            // the log will return a NaN (and all subsequently results.
-            double conditional = (double) counts[1][f]/ classCounts[1];
-            if(conditional == 0) continue;
-            else sumProb += Math.log(conditional);
+            if(counts[0][f]*counts[1][f] != 0) {
+                spamSum += (double) counts[1][f] / classCounts[1];
+                hamSum += (double) counts[0][f] / classCounts[0];
+            } else{}
         }
-        sumProb += Math.log((double) classCounts[1] / this.nbExamplesProcessed);
-        pr = Math.exp(sumProb);
+        pr = (spamSum / (spamSum + hamSum)) * ((double) classCounts[1]/this.nbExamplesProcessed);
         LOGGER.log(Level.INFO, "The predicted value is: " + pr);
         return pr;
     }
@@ -133,12 +132,13 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         int c, i;
         for(c = 0; c < 2; c++){
             for(i = 0; i < counts[c].length; i++){
-                if(counts[c][i] > 0)
-                    System.out.println("Class " + c + ", feature " + i + " has " +
-                            counts[c][i] + " counts");
+                if(counts[c][i] > 0);
+/*                    System.out.println("Class " + c + ", feature " + i + " has " +
+                            counts[c][i] + " counts");*/
             }
             System.out.println("Class " + c + " has " + classCounts[c] + " counts");
         }
+        System.out.println("Ham " + this.hamCounts + " Spam " + this.spamCounts);
         // boolean raul = this.nbExamplesProcessed == (classCounts[0] + classCounts[1]); returns true
         return(super.getInfo());
     }
