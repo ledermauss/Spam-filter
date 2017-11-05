@@ -14,13 +14,10 @@ import java.util.stream.Collectors;
  */
 public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
 
-    private int logNbOfBuckets;
     private int hashSize;
     private int[][] counts; // counts[c][i]: The count of n-grams in e-mails of class c (spam: c=1) that hash to value i
     private int[] classCounts; //classCounts[c] the count of e-mails of class c (spam: c=1)
     private static final Logger LOGGER = Logger.getLogger(NaiveBayesFeatureHashing.class.getName());
-    private int hamCounts;
-    private int spamCounts;
 
     /* FILL IN HERE */
 
@@ -37,13 +34,12 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      * @param threshold The threshold for classifying something as positive (spam). Classify as spam if Pr(Spam|n-grams)>threshold)
      */
     public NaiveBayesFeatureHashing(int logNbOfBuckets, double threshold){
-        this.logNbOfBuckets=logNbOfBuckets;
         this.threshold = threshold;
-        this.hashSize = (int )Math.pow(2, this.logNbOfBuckets) - 1;
+        this.hashSize = (int )Math.pow(2, logNbOfBuckets) - 1;
         this.counts = new int[2][this.hashSize];
         this.classCounts = new int[2];
         LOGGER.setUseParentHandlers(false);
-        Handler fileHandler  = null;
+        Handler fileHandler;
         try{
             //Creating consoleHandler and fileHandler
             fileHandler  = new FileHandler("./log/nbfh.log");
@@ -59,7 +55,6 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             LOGGER.log(Level.SEVERE, "Error occur in FileHandler.", exception);
         }
         LOGGER.finer("Finest example on LOGGER handler completed.");
-        LOGGER.info("Buckets number is " + this.logNbOfBuckets + " , and hashsize: " + this.hashSize);
     }
 
     /**
@@ -120,7 +115,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             if(counts[0][f]*counts[1][f] != 0) {
                 spamSum *= (double) counts[1][f] / classCounts[1];
                 hamSum *= (double) counts[0][f] / classCounts[0];
-            } else{}
+            }
         }
         pr = (spamSum / (spamSum + hamSum));
         LOGGER.log(Level.INFO, "The predicted value is: " + pr);
@@ -138,7 +133,6 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             }
             System.out.println("Class " + c + " has " + classCounts[c] + " counts");
         }
-        System.out.println("Ham " + this.hamCounts + " Spam " + this.spamCounts);
         // boolean raul = this.nbExamplesProcessed == (classCounts[0] + classCounts[1]); returns true
         return(super.getInfo());
     }
