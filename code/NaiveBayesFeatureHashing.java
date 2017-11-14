@@ -2,6 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -111,6 +112,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         Set<Integer> features = text.ngrams.stream().map(this::hash).collect(Collectors.toSet());
         double hamSum = Math.log((double) classCounts[0]/this.nbExamplesProcessed);
         double spamSum = Math.log((double) classCounts[1]/this.nbExamplesProcessed);
+//        System.out.println("Class 0 is " + classCounts[0] + ", Class 1 is " + classCounts[1]);
         for(int f: features){
             // adding 1 and this.hashSize (vocabulary size) for Laplace smothing
             hamSum += Math.log((1.0 + counts[0][f]) / (classCounts[0] + this.hashSize));
