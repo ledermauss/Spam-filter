@@ -50,8 +50,6 @@ public class NaiveBayesCountMinSketch extends OnlineTextClassifier{
             this.hashFunctions[i] = initHash(rand.nextInt(Integer.MAX_VALUE));
         }
 
-        /* FILL IN HERE */
-
     }
 
     /**
@@ -211,7 +209,7 @@ public class NaiveBayesCountMinSketch extends OnlineTextClassifier{
             NaiveBayesCountMinSketch nb = new NaiveBayesCountMinSketch(nbOfHashes ,logNbOfBuckets, threshold);
 
             // generate output for the learning curve
-            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
+            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall()};
             nb.makeLearningCurve(stream, evaluationMetrics, out+".nbcms", reportingPeriod, writeOutAllPredictions);
 
             nb.getInfo();

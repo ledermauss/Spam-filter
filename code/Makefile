@@ -26,7 +26,12 @@ SMALL_OUT=./output/small
 SMALL_PERIOD=100
 
 
-all: NaiveBayesFeatureHashing.class NaiveBayesCountMinSketch.class PerceptronFeatureHashing.class PerceptronCountMinSketch.class
+all: NaiveBayesFeatureHashing.class NaiveBayesCountMinSketch.class PerceptronFeatureHashing.class PerceptronCountMinSketch.class OnlineTextClassifier.class
+
+metrics: Accuracy.class Recall.class Precision.class
+
+OnlineTextClassifier.class: OnlineTextClassifier.java
+	javac -cp .:lib/* $<
 
 NaiveBayesFeatureHashing.class: NaiveBayesFeatureHashing.java
 	javac -cp .:lib/* $<
@@ -39,7 +44,16 @@ PerceptronFeatureHashing.class: PerceptronFeatureHashing.java
 	
 PerceptronCountMinSketch.class: PerceptronCountMinSketch.java
 	javac -cp .:lib/* $<
-	
+
+Accuracy.class: Accuracy.java
+	javac $<
+
+Recall.class: Recall.java
+	javac $<
+
+Precision.class: Precision.java
+	javac $<
+
 #TODO: Add compilation commands for other subclasses of OnlineTextClassifier (optional)
 	
 

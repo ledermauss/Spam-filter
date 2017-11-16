@@ -160,13 +160,13 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
 
             // initialize e-mail stream
             // n is the maximum size of n-grams.
-            MailStream stream = new MailStream(indexPath, new EmlParser(stopWordsPath,n));
+            MailStream stream = new MailStream(indexPath, new EmlParser(stopWordsPath,n));;
 
             // initialize learner
             NaiveBayesFeatureHashing nb = new NaiveBayesFeatureHashing(logNbOfBuckets, threshold);
 
             // generate output for the learning curve
-            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
+            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall()};
             // nbfh stands for feature hashing
             nb.makeLearningCurve(stream, evaluationMetrics, out+".nbfh", reportingPeriod, writeOutAllPredictions);
 
