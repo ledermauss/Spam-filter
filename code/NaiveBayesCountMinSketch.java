@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
@@ -125,11 +126,36 @@ public class NaiveBayesCountMinSketch extends OnlineTextClassifier{
      */
     @Override
     public double makePrediction(ParsedText text) {
-        double pr = 0.0;
+        double pr;
+        // stores the count of each ngram
+        HashMap<String, Integer> ngramCountHam = new HashMap<String, Integer>();
+        HashMap<String, Integer> ngramCountSpam = new HashMap<String, Integer>();
 
-        /* FILL IN HERE */
+        double[] labelFeatJoint = new double[2];
 
-        return pr;
+        // computes the joint probability of each class and all feature
+        for (int c = 0; c < 2; c++) {
+            // class probability
+            labelFeatJoint[c] = Math.log((double) this.classCounts[c]/ this.nbExamplesProcessed);
+            for (String ngram : text.ngrams) {
+                int minCount = this.counts[c][0][this.hashFunctions[0].apply(ngram)];
+                //  finds minimum count of an ngram out of all hashing functions
+                for (int d = 1; d < this.nbOfHashes; d++) {
+                    int hashedNgram = this.hashFunctions[d].apply(ngram);
+                    int hashCount = this.counts[c][d][hashedNgram];
+                    minCount = hashCount < minCount ? hashCount : minCount;
+                }
+                //  add log(conditional probability) of each feature by class,
+                //  using the minCount and laplace smoothing
+                labelFeatJoint[c] += Math.log((1.0 + minCount) /
+                                (this.classCounts[0] + this.hashSize));
+            }
+        }
+
+        //log-sum trick. Log(a) = spamSum, Log(b) = hamSum
+        // pr = spamSum - (spamSum + Log(1 + e^(hamSum-spamSum))
+        pr = -Math.log(1 + Math.exp(labelFeatJoint[0] - labelFeatJoint[1]));
+        return Math.exp(pr);
     }
 
     @Override
