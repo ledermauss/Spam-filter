@@ -71,10 +71,17 @@ abstract public class OnlineTextClassifier {
     public void makeLearningCurve(MailStream mailStream, EvaluationMetric[] evals, String out, int reportingPeriod, boolean writeOutAllPredictions) throws FileNotFoundException {
 
         PrintWriter[] evalWriters = new PrintWriter[evals.length];
+        PrintWriter csvWriter = new PrintWriter(out + "." + "csv");
         for (int e=0; e< evals.length; e++)
             evalWriters[e] = new PrintWriter(out+"."+evals[e].name());
         PrintWriter predictionWriter = writeOutAllPredictions ? new PrintWriter(out+".pred") : null;
         DecimalFormat df = new DecimalFormat("0.000");
+        String csvOutline = "samples";
+        // header of the csv file
+        for (int e = 0; e < evals.length; e++){
+            csvOutline += "," + evals[e].name();
+        }
+        csvOutline += "\n";
 
         int nbToTest = 10;
 
@@ -130,21 +137,28 @@ abstract public class OnlineTextClassifier {
             //model evaluaton. Prints to each _scoreName_ file the result
             // structure: nbExamplesProcessed \t score -> for the evaluation curve
             String outline = "trained with: "+nbExamplesProcessed;
-            for (int e=0; e< evals.length; e++) {
+            csvOutline += nbExamplesProcessed;
+            for (int e=0; e < evals.length; e++) {
                 double score = evals[e].evaluate(TP,FP,TN,FN);
                 evalWriters[e].println(nbExamplesProcessed + "\t" + score);
                 evalWriters[e].flush();
                 outline+="\t"+evals[e].name()+": "+df.format(score);
+                // adds the comma separated values of the scores
+                csvOutline +=  ",".concat(String.valueOf(score));
             }
+            //newline for the csv file
+            csvOutline += "\n";
             System.out.println(outline);
 
-            //updates (trains) the model with all mails of the iteration. After predicting
+            //updates (trains) the model with all mails of the iteration. After testing
             for (LabeledText example: buffer){
                 update(example);
             }
 
             nbToTest = Math.min(reportingPeriod, nbToTest*2);
         }
+        csvWriter.write(csvOutline);
+        csvWriter.close();
         for (int e=0; e< evals.length; e++) {
             evalWriters[e].close();
         }
