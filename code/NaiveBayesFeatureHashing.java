@@ -1,8 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
-import java.util.logging.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -18,9 +16,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
     private int hashSize;
     private int[][] counts; // counts[c][i]: The count of n-grams in e-mails of class c (spam: c=1) that hash to value i
     private int[] classCounts; //classCounts[c] the count of e-mails of class c (spam: c=1)
-    private static final Logger LOGGER = Logger.getLogger(NaiveBayesFeatureHashing.class.getName());
 
-    /* FILL IN HERE */
 
     /**
      * Initialize the naive Bayes classifier
@@ -39,23 +35,6 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         this.hashSize = (int )Math.pow(2, logNbOfBuckets) - 1;
         this.counts = new int[2][this.hashSize];
         this.classCounts = new int[2];
-        LOGGER.setUseParentHandlers(false);
-        Handler fileHandler;
-        try{
-            //Creating consoleHandler and fileHandler
-            fileHandler  = new FileHandler("./log/nbfh.log");
-            //Assigning handlers to LOGGER object
-            LOGGER.addHandler(fileHandler);
-            //Setting levels to handlers and LOGGER
-            fileHandler.setLevel(Level.ALL);
-            LOGGER.setLevel(Level.ALL);
-            LOGGER.config("Configuration done.");
-            //Console handler removed
-            LOGGER.log(Level.FINE, "Finer logged");
-        }catch(IOException exception){
-            LOGGER.log(Level.SEVERE, "Error occur in FileHandler.", exception);
-        }
-        LOGGER.finer("Finest example on LOGGER handler completed.");
     }
 
     /**
@@ -121,21 +100,11 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
         //log-sum trick. Log(a) = spamSum, Log(b) = hamSum
         // pr = spamSum - (spamSum + Log(1 + e^(hamSum-spamSum))
         pr = -Math.log(1 + Math.exp(hamSum - spamSum));
-        LOGGER.log(Level.INFO, "The predicted value is: " + Math.exp(pr));
         return Math.exp(pr);
     }
 
     @Override
     public String getInfo() {
-        int c, i;
-        for(c = 0; c < 2; c++){
-/*            for(i = 0; i < counts[c].length; i++){
-                if(counts[c][i] > 0);
-                    System.out.println("Class " + c + ", feature " + i + " has " +
-                            counts[c][i] + " counts");
-            }*/
-            System.out.println("Class " + c + " has " + classCounts[c] + " counts");
-        }
         return(super.getInfo());
     }
 
@@ -161,7 +130,7 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
 
             // initialize e-mail stream
             // n is the maximum size of n-grams.
-            MailStream stream = new MailStream(indexPath, new EmlParser(stopWordsPath,n));;
+            MailStream stream = new MailStream(indexPath, new EmlParser(stopWordsPath,n));
 
             // initialize learner
             NaiveBayesFeatureHashing nb = new NaiveBayesFeatureHashing(logNbOfBuckets, threshold);
