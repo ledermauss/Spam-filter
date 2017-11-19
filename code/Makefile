@@ -104,7 +104,7 @@ nbfh_threshold_small: NaiveBayesFeatureHashing.class
 
 nbfh_threshold: NaiveBayesFeatureHashing.class
 	@echo "Testing the best threshold for the NBFH classifier"
-	rm -f $(SMALL_OUT).nbfh.*
+	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) $(THRESHOLD_TEST) $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions threshold $(THRESHOLD_TEST)
 
 
