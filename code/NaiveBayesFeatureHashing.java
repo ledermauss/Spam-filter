@@ -144,7 +144,8 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
      */
     public static void main(String[] args) throws IOException {
         if (args.length < 7) {
-            System.err.println("Usage: java NaiveBayesFeatureHashing <indexPath> <stopWordsPath> <logNbOfBuckets> <threshold> <outPath> <reportingPeriod> <maxN> [-writeOutAllPredictions]");
+            System.err.println("Usage: java NaiveBayesFeatureHashing <indexPath> <stopWordsPath> <logNbOfBuckets> " +
+                    "<threshold> <outPath> <reportingPeriod> <ngramsSize> [-writeOutAllPredictions] [ParamToTestName] [ParamToTestValue]");
             throw new Error("Expected 7 or 8 arguments, got " + args.length + ".");
         }
         try {
@@ -166,7 +167,18 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
             NaiveBayesFeatureHashing nb = new NaiveBayesFeatureHashing(logNbOfBuckets, threshold);
 
             // generate output for the learning curve
-            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall()};
+            EvaluationMetric[] evaluationMetrics;
+            // if indicated, an extra column will be created indicating the parameter to test
+            // otherswise, just the normal metrics are used
+            if (args.length > 9){
+                String paramToTest = args[8];
+                double paramValue = Double.parseDouble(args[9]);
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(),
+                        new Recall(), new Parameter(paramToTest, paramValue)};
+            } else{
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall()};
+            }
+
             // nbfh stands for feature hashing
             nb.makeLearningCurve(stream, evaluationMetrics, out+".nbfh", reportingPeriod, writeOutAllPredictions);
 

@@ -11,11 +11,11 @@ DATA=/cw/bdap/assignment1/Data/index
 
 STOPWORDS=../stop-word-list_stanford.txt
 
-MAX_N=2
-LOG_NB_BUCKETS=20
-NB_HASHES=10
+MAX_N=2			# ngrams size
+LOG_NB_BUCKETS=20	# hashSize is 2^this
+NB_HASHES=10 		# count-min sketch hashing functions
 THRESHOLD=0.5
-LEARNING_RATE=0.0001
+LEARNING_RATE=0.0001	# perceptron learning rate
 
 
 # Experiment parameters
@@ -96,6 +96,16 @@ pcms: PerceptronCountMinSketch.class
 	@echo "Testing perceptron classification with count-min sketch on the complete data"
 	rm -f $(OUT).pcms.*
 	time java -cp .:lib/* PerceptronCountMinSketch $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) $(NB_HASHES) $(LEARNING_RATE) $(OUT) $(PERIOD) $(MAX_N)
+
+nbfh_threshold_small: NaiveBayesFeatureHashing.class
+	@echo "Testing the best threshold for the NBFH classifier"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(SMALL_DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) $(THRESHOLD_TEST) $(SMALL_OUT) $(SMALL_PERIOD) $(MAX_N) -writeOutAllPredictions threshold $(THRESHOLD_TEST)
+
+nbfh_threshold: NaiveBayesFeatureHashing.class
+	@echo "Testing the best threshold for the NBFH classifier"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) $(THRESHOLD_TEST) $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions threshold $(THRESHOLD_TEST)
 
 
 
