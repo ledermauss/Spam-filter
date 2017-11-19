@@ -143,9 +143,9 @@ public class NaiveBayesFeatureHashing extends OnlineTextClassifier{
                 String paramToTest = args[8];
                 double paramValue = Double.parseDouble(args[9]);
                 evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(),
-                        new Recall(), new Parameter(paramToTest, paramValue)};
+                        new Recall(), new FPRate(),new Parameter(paramToTest, paramValue)};
             } else{
-                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall()};
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall(), new FPRate()};
             }
 
             // nbfh stands for feature hashing

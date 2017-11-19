@@ -28,7 +28,7 @@ SMALL_PERIOD=100
 
 all: NaiveBayesFeatureHashing.class NaiveBayesCountMinSketch.class PerceptronFeatureHashing.class PerceptronCountMinSketch.class OnlineTextClassifier.class
 
-metrics: Accuracy.class Recall.class Precision.class
+metrics: Accuracy.class Recall.class Precision.class FPRate.class
 
 OnlineTextClassifier.class: OnlineTextClassifier.java
 	javac -cp .:lib/* $<
@@ -52,6 +52,9 @@ Recall.class: Recall.java
 	javac $<
 
 Precision.class: Precision.java
+	javac $<
+
+FPRate.class: FPRate.java
 	javac $<
 
 #TODO: Add compilation commands for other subclasses of OnlineTextClassifier (optional)
@@ -107,7 +110,15 @@ nbfh_threshold: NaiveBayesFeatureHashing.class
 	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) $(THRESHOLD_TEST) $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions threshold $(THRESHOLD_TEST)
 
+nbfh_ngrams_small: NaiveBayesFeatureHashing.class
+	@echo "Testing the best ngram choice for the NBFH classifier"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(SMALL_DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) 0.75 $(SMALL_OUT) $(SMALL_PERIOD) $(N_TEST) -writeOutAllPredictions ngrams $(N_TEST)
 
+nbfh_ngrams: NaiveBayesFeatureHashing.class
+	@echo "Testing the best ngram choice for the NBFH classifier"
+	rm -f $(OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) 0.75 $(OUT) $(PERIOD) $(N_TEST) -writeOutAllPredictions ngrams $(N_TEST)
 
 	
 clean:
