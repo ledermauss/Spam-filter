@@ -58,8 +58,28 @@ FPRate.class: FPRate.java
 	javac $<
 
 #TODO: Add compilation commands for other subclasses of OnlineTextClassifier (optional)
-	
 
+nbfh_final: NaiveBayesFeatureHashing.class
+	@echo "Testing naive Bayes with feature hashing on the complete data"
+	rm -f $(OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) 20 0.5 $(OUT) $(PERIOD) 2
+
+nbcms_final: NaiveBayesCountMinSketch.class
+	@echo "Testing naive Bayes with count-min sketch on the complete data"
+	rm -f $(OUT).nbcms.*
+	time java -cp .:lib/* NaiveBayesCountMinSketch $(DATA) $(STOPWORDS) 20 $(NB_HASHES) 0.5 $(OUT) $(PERIOD) 2 
+
+pfh_final: PerceptronFeatureHashing.class
+	@echo "Testing perceptron classification with feature hashing on the complete data"
+	rm -f $(OUT).pfh.*
+	time java -cp .:lib/* PerceptronFeatureHashing $(DATA) $(STOPWORDS) 20 0.5 $(OUT) $(PERIOD) 1 
+	
+pcms_final: PerceptronCountMinSketch.class
+	@echo "Testing perceptron classification with count-min sketch on the complete data"
+	rm -f $(OUT).pcms.*
+	time java -cp .:lib/* PerceptronCountMinSketch $(DATA) $(STOPWORDS) 20 $(NB_HASHES) 0.5 $(OUT) $(PERIOD) 1 
+
+#################
 nbfh_small: NaiveBayesFeatureHashing.class
 	@echo "Testing naive Bayes with feature hashing on a subset of the data"
 	rm -f $(SMALL_OUT).nbfh.*
@@ -164,6 +184,7 @@ pcms_hashf: PerceptronCountMinSketch.class
 	@echo "Testing perceptron classification with count-min sketch on the complete data"
 	rm -f $(OUT).pcms.*
 	time java -cp .:lib/* PerceptronCountMinSketch $(DATA) $(STOPWORDS) 6 $(NB_HASHES_TEST) 0.6 $(OUT) $(PERIOD) 1 -writeOutAllPredictions hashf $(NB_HASHES_TEST)
+
 	
 clean:
 	rm *.class
