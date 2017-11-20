@@ -28,7 +28,7 @@ SMALL_PERIOD=100
 
 all: NaiveBayesFeatureHashing.class NaiveBayesCountMinSketch.class PerceptronFeatureHashing.class PerceptronCountMinSketch.class OnlineTextClassifier.class
 
-metrics: Accuracy.class Recall.class Precision.class FPRate.class
+metrics: Accuracy.class Recall.class Precision.class FPRate.class FPRate.class
 
 OnlineTextClassifier.class: OnlineTextClassifier.java
 	javac -cp .:lib/* $<
@@ -119,6 +119,16 @@ nbfh_ngrams: NaiveBayesFeatureHashing.class
 	@echo "Testing the best ngram choice for the NBFH classifier"
 	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_NB_BUCKETS) 0.75 $(OUT) $(PERIOD) $(N_TEST) -writeOutAllPredictions ngrams $(N_TEST)
+
+nbfh_buckets_small: NaiveBayesFeatureHashing.class
+	@echo "Testing the best bucket choice for Feature Hashing"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(SMALL_DATA) $(STOPWORDS) $(LOG_BUCKETS_TEST) 0.75 $(SMALL_OUT) $(SMALL_PERIOD) $(MAX_N) -writeOutAllPredictions buckets $(LOG_BUCKETS_TEST)
+
+nbfh_buckets: NaiveBayesFeatureHashing.class
+	@echo "Testing the best bucket choice for Feature Hashing"
+	rm -f $(OUT).nbfh.*
+	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_BUCKETS_TEST) 0.75 $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions buckets $(LOG_BUCKETS_TEST)
 
 	
 clean:
