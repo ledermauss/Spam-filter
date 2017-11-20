@@ -104,6 +104,32 @@ Looks like 1 and 3 datasets are good, 4 sucks, 2 meh. Expecting the big dataset 
 Will compare with a low bucket config to see if it improves
 ```{r}
 hashf <- read.csv("../datasets/pfh.hashf.csv")
+hashf$hashf <- as.factor(hashf$hashf)
+ggplot(hashf, aes(samples, acc, col = hashf)) + geom_smooth() + 
+  labs(y = "Accuracy")
+
+```
+
+```{r}
+nbfh <- read.csv("out.nbfh.csv")
+nbfh$fpr <- NULL
+nbfh$classif <- "nbfh"
+pfh <- read.csv("out.pfh.csv")
+pfh$fpr <- NULL
+pfh$classif <- "pfh"
+pcms <- read.csv("out.pcms.csv")
+pcms$fpr <- NULL
+pcms$classif <- "pcms"
+nbcms <- read.csv("out.nbcms.csv")
+nbcms$classif <- "nbcms"
+
+whole <- rbind(nbfh, pfh, pcms, nbcms)
+ggplot(whole, aes(samples, y=acc, col = classif)) + geom_line() +
+  labs(y = "Accuracy")
+ggplot(whole, aes(samples, y=rec, col = classif)) + geom_line() + 
+  labs(y = "Recall")
+ggplot(whole, aes(samples, y=prec, col = classif)) + geom_line() + 
+  labs(y = "Precision")
 
 ```
 
