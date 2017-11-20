@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -20,7 +21,6 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
     private int hashSize;
     private double learningRate;
     private double bias;
-    private double squaredError;
     private double[] weights; //weights[i]: The weight for n-grams that hash to value i
     private static final Logger LOGGER = Logger.getLogger(PerceptronFeatureHashing.class.getName());
 
@@ -39,12 +39,19 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
      * @param learningRate The size of the updates of the weights
      */
     public PerceptronFeatureHashing(int logNbOfBuckets, double learningRate){
+        //bias is another wight, must be initialized. Its feature is always one
         this.learningRate = learningRate;
         this.threshold = 0.0;
         this.hashSize = (int )Math.pow(2, logNbOfBuckets) - 1;
+        Random rand = new Random();
+        double rangeMin =  -1;
+        double rangeMax =  1;
+        this.bias = rangeMin + (rangeMax - rangeMin) * rand.nextDouble();
         this.weights = new double[this.hashSize];
-        this.bias = 1;
-        this.squaredError = 0;
+        //random = rangeMin + (rangeMax - rangeMin) * randomDouble
+        for (int i = 0; i < this.hashSize; i++) {
+            this.weights[i] = rangeMin + (rangeMax - rangeMin) * rand.nextDouble();
+        }
         LOGGER.setUseParentHandlers(false);
         Handler fileHandler;
         try{
@@ -96,10 +103,10 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
                 .map(this::hash).collect(Collectors.toSet());
         for(int f: hashedNgrams){
             // the 1 stands for the feature value (1 = present in the text, 0 = non present)
+            // y - pr is the error
+            // learningRate x error x feature value = delta
             weights[f] += this.learningRate * (y - pr) * 1;
         }
-        this.squaredError += 0.5 * Math.pow(y - pr, 2);
-        LOGGER.log(Level.INFO, "Squared error is " + this.squaredError);
     }
 
 
@@ -130,7 +137,7 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
         int f;
         for(f = 0; f < this.hashSize; f++){
             if(weights[f] != 0) {
-                System.out.println("Weight of feature " + f + " is " + weights[f]);
+                //LOGGER.log(Level.INFO, "Weight of feature " + f + " is " + weights[f]);
             }
         }
         return(super.getInfo());
@@ -142,7 +149,8 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
      */
     public static void main(String[] args) throws IOException {
         if (args.length < 7) {
-            System.err.println("Usage: java PerceptronFeatureHashing <indexPath> <stopWordsPath> <logNbOfBuckets> <learningRate> <outPath> <reportingPeriod> <maxN> [-writeOutAllPredictions]");
+            System.err.println("Usage: java PerceptronFeatureHashing <indexPath> <stopWordsPath> <logNbOfBuckets> " +
+                    "<learningRate> <outPath> <reportingPeriod> <maxN> [-writeOutAllPredictions][ParamToTestName] [ParamToTestValue]");
             throw new Error("Expected 7 or 8 arguments, got " + args.length + ".");
         }
         try {
@@ -163,10 +171,20 @@ public class PerceptronFeatureHashing extends OnlineTextClassifier{
             PerceptronFeatureHashing perceptron = new PerceptronFeatureHashing(logNbOfBuckets, learningRate);
 
             // generate output for the learning curve
-            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
+            EvaluationMetric[] evaluationMetrics;
+            // if indicated, an extra column will be created indicating the parameter to test
+            // otherwise, just the normal metrics are used
+            if (args.length > 9){
+                String paramToTest = args[8];
+                double paramValue = Double.parseDouble(args[9]);
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(),
+                        new Recall(), new FPRate(),new Parameter(paramToTest, paramValue)};
+            } else{
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall(), new FPRate()};
+            }
             perceptron.makeLearningCurve(stream, evaluationMetrics, out+".pfh", reportingPeriod, writeOutAllPredictions);
 
-            perceptron.getInfo();
+            //perceptron.getInfo();
 
         } catch (FileNotFoundException e) {
             System.err.println(e.toString());
