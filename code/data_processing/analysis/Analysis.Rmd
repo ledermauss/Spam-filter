@@ -5,6 +5,7 @@ output: pdf
 # Threshold test
 ```{r}
 library(ggplot2)
+library(dplyr)
 thresholds <- read.csv("../datasets/nbfh.threshold.csv")
 thresholds$threshold <- as.factor(thresholds$threshold)
 # predictions (file with tabs)
@@ -36,17 +37,32 @@ Using the accumulated version of the codebase
 ```{r}
 ngrams <- read.csv("../datasets/nbfh.ngrams.csv")
 ngrams$ngrams <- as.factor(ngrams$ngrams)
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
   labs(y = "Accuracy")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
   labs(y = "Precission")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
   labs(y = "Recall")
-ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_smooth() + 
+ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_line() + 
   labs(title = "Precision-recall curve")
 ```
 Conclussion: the best is using just one ngram
 
 # Buckets size
 X axis: memory usage
+```{r}
+buckets <- read.csv("../datasets/nbfh.buckets.csv")
+buckets$memory <- 2^buckets$buckets
+buckets %>% group_by(buckets) %>% filter(samples == max(samples))
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+  labs(y = "Accuracy")
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+  labs(y = "Precission")
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+  labs(y = "Recall")
+ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_line() + 
+  labs(title = "Precision-recall curve")
+
+```
+
 
