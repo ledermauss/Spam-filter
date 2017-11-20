@@ -155,7 +155,8 @@ public class PerceptronCountMinSketch extends OnlineTextClassifier{
     public static void main(String[] args) throws IOException {
 
         if (args.length < 8) {
-            System.err.println("Usage: java PerceptronCountMinSketch <indexPath> <stopWordsPath> <logNbOfBuckets> <nbOfHashes> <learningRate> <outPath> <reportingPeriod> <maxN> [-writeOutAllPredictions]");
+            System.err.println("Usage: java PerceptronCountMinSketch <indexPath> <stopWordsPath>" +
+                    " <logNbOfBuckets> <nbOfHashes> <learningRate> <outPath> <reportingPeriod> <maxN> [-writeOutAllPredictions]");
             throw new Error("Expected 8 or 9 arguments, got " + args.length + ".");
         }
         try {
@@ -177,7 +178,18 @@ public class PerceptronCountMinSketch extends OnlineTextClassifier{
             PerceptronCountMinSketch perceptron = new PerceptronCountMinSketch(nbOfHashes ,logNbOfBuckets, learningRate);
 
             // generate output for the learning curve
-            EvaluationMetric[] evaluationMetrics = new EvaluationMetric[]{new Accuracy()}; //ADD AT LEAST TWO MORE EVALUATION METRICS
+            EvaluationMetric[] evaluationMetrics;
+            // if indicated, an extra column will be created indicating the parameter to test
+            // otherwise, just the normal metrics are used
+            if (args.length > 10){
+                String paramToTest = args[9];
+                double paramValue = Double.parseDouble(args[10]);
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(),
+                        new Recall(), new FPRate(),new Parameter(paramToTest, paramValue)};
+            } else{
+                evaluationMetrics = new EvaluationMetric[]{new Accuracy(), new Precision(), new Recall(), new FPRate()};
+            }
+
             perceptron.makeLearningCurve(stream, evaluationMetrics, out+".pcms", reportingPeriod, writeOutAllPredictions);
 
         } catch (FileNotFoundException e) {

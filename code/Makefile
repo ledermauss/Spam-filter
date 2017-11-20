@@ -153,6 +153,17 @@ pfh_ngrams: PerceptronFeatureHashing.class
 	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* PerceptronFeatureHashing $(DATA) $(STOPWORDS) 20 0.6 $(OUT) $(PERIOD) $(MAX_N_TEST) -writeOutAllPredictions ngrams $(MAX_N_TEST)
 
+# Using 0.6 learning rate and 1 ngram size, as well as 15 as bucket size: it is bad, so there will
+# be overstimates
+pcms_hashf_small: PerceptronCountMinSketch.class
+	@echo "Testing perceptron classification with count-min sketch on a subset of the data"
+	rm -f $(SMALL_OUT).pcms.*
+	time java -cp .:lib/* PerceptronCountMinSketch $(SMALL_DATA) $(STOPWORDS) 6 $(NB_HASHES_TEST) 0.6 $(SMALL_OUT) $(SMALL_PERIOD) 1 -writeOutAllPredictions hashf $(NB_HASHES_TEST)
+
+pcms_hashf: PerceptronCountMinSketch.class
+	@echo "Testing perceptron classification with count-min sketch on the complete data"
+	rm -f $(OUT).pcms.*
+	time java -cp .:lib/* PerceptronCountMinSketch $(DATA) $(STOPWORDS) 6 $(NB_HASHES_TEST) 0.6 $(OUT) $(PERIOD) 1 -writeOutAllPredictions hashf $(NB_HASHES_TEST)
 	
 clean:
 	rm *.class
