@@ -142,6 +142,17 @@ pfh_lrate: PerceptronFeatureHashing.class
 	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* PerceptronFeatureHashing $(DATA) $(STOPWORDS) 20 $(LEARNING_RATE_TEST) $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions lrate $(LEARNING_RATE_TEST)
 
+# Using 0.6 as learning rate due to previous results
+pfh_ngrams_small: PerceptronFeatureHashing.class
+	@echo "Testing the best best nbfh choice for PFH"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* PerceptronFeatureHashing $(SMALL_DATA) $(STOPWORDS) 20 0.6 $(SMALL_OUT) $(SMALL_PERIOD) $(MAX_N_TEST) -writeOutAllPredictions ngrams $(MAX_N_TEST)
+
+pfh_ngrams: PerceptronFeatureHashing.class
+	@echo "Testing the best ngram choice for PFH"
+	rm -f $(OUT).nbfh.*
+	time java -cp .:lib/* PerceptronFeatureHashing $(DATA) $(STOPWORDS) 20 0.6 $(OUT) $(PERIOD) $(MAX_N_TEST) -writeOutAllPredictions ngrams $(MAX_N_TEST)
+
 	
 clean:
 	rm *.class
