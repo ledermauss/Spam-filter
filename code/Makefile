@@ -130,6 +130,18 @@ nbfh_buckets: NaiveBayesFeatureHashing.class
 	rm -f $(OUT).nbfh.*
 	time java -cp .:lib/* NaiveBayesFeatureHashing $(DATA) $(STOPWORDS) $(LOG_BUCKETS_TEST) 0.75 $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions buckets $(LOG_BUCKETS_TEST)
 
+
+# nbfh_buckets demonstrate 20 is actually very good for buckets size
+pfh_lrate_small: PerceptronFeatureHashing.class
+	@echo "Testing the best Learning Rate for Perceptron"
+	rm -f $(SMALL_OUT).nbfh.*
+	time java -cp .:lib/* PerceptronFeatureHashing $(SMALL_DATA) $(STOPWORDS) 20 $(LEARNING_RATE_TEST) $(SMALL_OUT) $(SMALL_PERIOD) $(MAX_N) -writeOutAllPredictions lrate $(LEARNING_RATE_TEST)
+
+pfh_lrate: PerceptronFeatureHashing.class
+	@echo "Testing the best Learning Rate for Perceptron"
+	rm -f $(OUT).nbfh.*
+	time java -cp .:lib/* PerceptronFeatureHashing $(DATA) $(STOPWORDS) 20 $(LEARNING_RATE_TEST) $(OUT) $(PERIOD) $(MAX_N) -writeOutAllPredictions lrate $(LEARNING_RATE_TEST)
+
 	
 clean:
 	rm *.class
