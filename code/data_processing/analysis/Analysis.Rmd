@@ -1,18 +1,23 @@
 ---
 title: "R Notebook"
-output: pdf
+output: pdf_document
 ---
-# Threshold test
+# Naive Bayes Classifier
+## Threshold test
+
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "~/Leuven/bda_programming/assignments/assignment1/report/images/"
+)
+```
 ```{r}
-library(ggplot2)
 library(dplyr)
+library(ggplot2)
 thresholds <- read.csv("../datasets/nbfh.threshold.csv")
 thresholds$threshold <- as.factor(thresholds$threshold)
 # predictions (file with tabs)
-nbfh <- read_delim("../datasets/nbfh.threshold.pred",
-     "\t", escape_double = FALSE, col_names = FALSE,
-     trim_ws = TRUE)
-names(nbfh) <- c("Label", "Predicted", "Spam_prob ")
+nbfh <- read.csv("../datasets/nbfh.threshold.pred", sep = "\t")
+names(nbfh) <- c("Label", "Predicted", "Spam_prob")
 
 # Suggestion: since under 0.5 there is almost no probability, I could remove
 # the 0.25 threshold
@@ -39,9 +44,9 @@ ngrams <- read.csv("../datasets/nbfh.ngrams.csv")
 ngrams$ngrams <- as.factor(ngrams$ngrams)
 ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
   labs(y = "Accuracy")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+ggplot(ngrams, aes(samples, prec, col = ngrams)) + geom_smooth() + 
   labs(y = "Precission")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+ggplot(ngrams, aes(samples, rec, col = ngrams)) + geom_smooth() + 
   labs(y = "Recall")
 ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_line() + 
   labs(title = "Precision-recall curve")
@@ -55,7 +60,7 @@ buckets <- read.csv("../datasets/nbfh.buckets.csv")
 buckets$memory <- 2^buckets$buckets
 buckets <- buckets %>% group_by(buckets) %>% filter(samples == max(samples))
 ggplot(buckets, aes(buckets, acc)) + geom_line() + 
-  labs(title = "Accuracy curve")
+  labs(title = "                            Accuracy over bucket size", y = "Accuracy", x = "Log Buckets")
 # TODO: add labs to each point in the line and plot the other two metrics
 ```
 Clearly, from 18 onwards is good (does not improve anymore)
@@ -76,6 +81,28 @@ ggplot(lrate, aes(samples, y=prec, col = lrate)) + geom_line() +
   labs(y = "Precision")
 
 ```
-Looks like 0.6 is good in this dataset
+Looks like 0.9 and 0.6 is good in this dataset, so 0.6 is good. 
+## Ngrams
+```{r}
+ngrams <- read.csv("../datasets/pfh.ngrams.csv")
+ngrams$ngrams <- as.factor(ngrams$ngrams)
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+  labs(y = "Accuracy")
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+  labs(y = "Precission")
+ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_line() + 
+  labs(y = "Recall")
+ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_line() + 
+  labs(title = "Precision-recall curve")
+# idea: line htat plots only the maximum parameter?
+```
+Looks like 1 and 3 datasets are good, 4 sucks, 2 meh. Expecting the big dataset still. Will use 1 till then
+
+## Coutn Min sketch
+Will compare with a low bucket config to see if it improves
+```{r}
+hashf <- read.csv("../datasets/pfh.hashf.csv")
+
+```
 
 
