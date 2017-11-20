@@ -53,16 +53,29 @@ X axis: memory usage
 ```{r}
 buckets <- read.csv("../datasets/nbfh.buckets.csv")
 buckets$memory <- 2^buckets$buckets
-buckets %>% group_by(buckets) %>% filter(samples == max(samples))
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
-  labs(y = "Accuracy")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
-  labs(y = "Precission")
-ggplot(ngrams, aes(samples, acc, col = ngrams)) + geom_smooth() + 
+buckets <- buckets %>% group_by(buckets) %>% filter(samples == max(samples))
+ggplot(buckets, aes(buckets, acc)) + geom_line() + 
+  labs(title = "Accuracy curve")
+# TODO: add labs to each point in the line and plot the other two metrics
+```
+Clearly, from 18 onwards is good (does not improve anymore)
+
+# Perceptron
+## Learning rate test
+```{r}
+lrate <- read.csv("../datasets/pfh.lrate.csv") %>% filter(lrate %% 0.2 != 0,
+                                                          lrate != 0.1)
+
+lrate$lrate <- as.factor(lrate$lrate)
+# filter most: show only 0.1, 0.3, 0.5, 0.7, 0.9 and 0.01 and 0.001
+ggplot(lrate, aes(samples, y=rec, col = lrate)) + geom_line() + 
   labs(y = "Recall")
-ggplot(ngrams, aes(rec, prec, col = ngrams)) + geom_line() + 
-  labs(title = "Precision-recall curve")
+ggplot(lrate, aes(samples, y=acc, col = lrate)) + geom_line() + 
+  labs(y = "Accuracy")
+ggplot(lrate, aes(samples, y=prec, col = lrate)) + geom_line() + 
+  labs(y = "Precision")
 
 ```
+Looks like 0.6 is good in this dataset
 
 
