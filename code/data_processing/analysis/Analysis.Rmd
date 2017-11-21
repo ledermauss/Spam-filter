@@ -111,16 +111,16 @@ ggplot(hashf, aes(samples, acc, col = hashf)) + geom_smooth() +
 ```
 
 ```{r}
-nbfh <- read.csv("out.nbfh.csv")
+nbfh <- read.csv("../datasets/out.nbfh.csv")
 nbfh$fpr <- NULL
 nbfh$classif <- "nbfh"
-pfh <- read.csv("out.pfh.csv")
+pfh <- read.csv("../datasets/out.pfh.csv")
 pfh$fpr <- NULL
 pfh$classif <- "pfh"
-pcms <- read.csv("out.pcms.csv")
+pcms <- read.csv("../datasets/out.pcms.csv")
 pcms$fpr <- NULL
 pcms$classif <- "pcms"
-nbcms <- read.csv("out.nbcms.csv")
+nbcms <- read.csv("../datasets/out.nbcms.csv")
 nbcms$classif <- "nbcms"
 
 whole <- rbind(nbfh, pfh, pcms, nbcms)
